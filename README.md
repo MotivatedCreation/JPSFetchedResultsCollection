@@ -76,6 +76,6 @@ fetchedResultsContainer.performFetch()
 ```
 let aFetchedResultsController = ...
 let withFetchedResultsController = ...
-fetchedResultsContainer.replaceFetchedResultsControllerAtIndex(aFetchedResultsController, withFetchedResultsController: withFetchedResultsController)
+fetchedResultsContainer.replaceFetchedResultsController(aFetchedResultsController, withFetchedResultsController: withFetchedResultsController)
 fetchedResultsContainer.performFetch()
 ```
