@@ -62,7 +62,7 @@ let section = 0
 fetchedResultsContainer.numberOfObjectsInSection(section)
 ```
 
-** OR **
+**OR**
 
 ```
 let section = 0
