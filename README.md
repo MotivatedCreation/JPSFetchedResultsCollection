@@ -11,14 +11,14 @@ Allocate an instance of the JPSFetchedResultsContainer using either NSFetchedRes
 
 ```
 let fetchedResultsContainer = JPSFetchedResultsContainer(fetchedResultsControllers: [...], managedObjectContext: context)
-fetchedResultsController.delegate = self;
+fetchedResultsController.delegate = self
 ```
 
 **OR**
 
 ```
 let fetchedResultsContainer = JPSFetchedResultsContainer(fetchRequests: [...], managedObjectContext: context)
-fetchedResultsController.delegate = self;
+fetchedResultsController.delegate = self
 ```
 --
 
@@ -37,7 +37,9 @@ func container(container: JPSFetchedResultsContainer, didChangeObject anObject: 
 ### Empty Sections
 Create empty sections by adding a JPSEmptyFetchedResultsController to the array passed in to the constructor. JPSEmptyFetchedResultsController conforms to NSFetchedResultsSectionInfo. This way you can give the empty section a name, indexTitle, etc.
 ```
-JPSEmptyFetchedResultsController()
+let emptyFetchedResultsController = JPSEmptyFetchedResultsController()
+emptyFetchedResultsController.name = "Empty Section"
+emptyFetchedResultsController.indexTitle = "Empty Index Title"
 ```
 --
 ### Fetching
