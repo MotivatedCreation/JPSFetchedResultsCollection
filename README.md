@@ -7,7 +7,7 @@ If you think of the container as a tree, the container is the root node. The imm
 # Usage
 
 ### Allocating a Container
-**NOTE: The order of the NSFetchedResultsControllers in the array passed in to the constructor determines the order of the sections. The same goes for the NSFetchRequests.**
+Allocate an instance of the JPSFetchedResultsContainer using either NSFetchedResultsControllers or NSFetchRequests. The order of the NSFetchedResultsControllersn or NSFetchRequests in the array determines the order of the entity sections.
 
 ```
 let fetchedResultsContainer = JPSFetchedResultsContainer(fetchedResultsControllers: [...], managedObjectContext: context)
