@@ -6,37 +6,12 @@
 import UIKit
 
 
-// MARK: NSFetchedResultsController Extension
+// MARK: JPSEmptyFetchedResultsController
 
-private var isEmptyAssociatedKey = 0
-
-extension NSFetchedResultsController
+@objc class JPSEmptyFetchedResultsController: NSFetchedResultsController, NSFetchedResultsSectionInfo
 {
-    private var isEmpty: Bool?
-    {
-        get {
-            return objc_getAssociatedObject(self, &isEmptyAssociatedKey) as? Bool
-        }
-        
-        set {
-            objc_setAssociatedObject(self, &isEmptyAssociatedKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
-        }
-    }
-
-    var section: [NSFetchedResultsSectionInfo]
-    class func empty() -> NSFetchedResultsController
-    {
-        let fetchedResultsController = NSFetchedResultsController()
-        fetchedResultsController.isEmpty = true
-        
-        return fetchedResultsController
-    }
-}
-
-@objc class JPSFechedResultsEmptySectionInfo: NSObject, NSFetchedResultsSectionInfo
-{
-    var name = "EmptySection"
-    var indexTitle: String? = "EmptySection"
+    var name = ""
+    var indexTitle: String? = ""
     
     var numberOfObjects: Int
     {
@@ -97,10 +72,9 @@ extension NSFetchedResultsController
             
             for aFetchedResultsController in self.fetchedResultsControllers
             {
-                if (aFetchedResultsController.isEmpty == true)
+                if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
                 {
-                    let emtpySectionInfo = JPSFechedResultsEmptySectionInfo()
-                    theSections.append(emtpySectionInfo)
+                    theSections.append(aFetchedResultsController as! JPSEmptyFetchedResultsController)
                     
                     continue
                 }
@@ -145,7 +119,7 @@ extension NSFetchedResultsController
         
         for aFetchedResultsController in self.fetchedResultsControllers
         {
-            if (aFetchedResultsController.isEmpty == true)
+            if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
             {
                 totalSections += 1
                 
@@ -176,7 +150,7 @@ extension NSFetchedResultsController
         {
             if (aFetchedResultsController.isEqual(fetchedResultsController)) { break }
             
-            if (aFetchedResultsController.isEmpty == true)
+            if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
             {
                 totalSections += 1
                 
@@ -195,7 +169,7 @@ extension NSFetchedResultsController
     {
         for fetchedResultsController in self.fetchedResultsControllers
         {
-            if (fetchedResultsController.isEmpty == true) { continue }
+            if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
             
             try fetchedResultsController.performFetch()
         }
@@ -225,7 +199,7 @@ extension NSFetchedResultsController
         
         for fetchedResultsController in self.fetchedResultsControllers
         {
-            if (fetchedResultsController.isEmpty == true) { continue }
+            if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
             
             if let anIndexPath = fetchedResultsController.indexPathForObject(object)
             {
