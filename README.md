@@ -23,6 +23,7 @@ fetchedResultsController.delegate = self;
 --
 
 ### Delegate
+Assign a delegate to monitor changes to the JPSFetchedResultsContainer. Thus, allowing you to change your model view accordingly.
 ```
 func containerWillChangeContent(container: JPSFetchedResultsContainer)
 
@@ -34,16 +35,19 @@ func container(container: JPSFetchedResultsContainer, didChangeObject anObject: 
 ```
 --
 ### Empty Sections
+Create empty sections by adding an empty NSFetchedResultsController to the array passed in to the constructor.
 ```
 NSFetchedResultsController.empty()
 ```
 --
 ### Fetching
+Fetch objects from Core Data the same way as a NSFetchedResultsController.
 ```
 fetchedResultsContainer.performFetch()
 ```
 --
 ### Obtaining objects
+Obtain objects from a section the same way as a NSFetchedResultsController.
 ```
 let indexPath = NSIndexPath(...)
 fetchedResultsContainer.objectAtIndexPath(indexPath)
@@ -59,10 +63,12 @@ fetchedResultsContainer.numberOfObjectsInSection(section)
 ```
 --
 ### Changing FetchedResultsControllers
+Replace NSFetchedResultsControllers when you want to change a section.
 ```
 let index = 0
 let withFetchedResultsController = ...
 fetchedResultsContainer.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
+fetchedResultsContainer.performFetch()
 ```
 
 **OR**
@@ -71,4 +77,5 @@ fetchedResultsContainer.replaceFetchedResultsControllerAtIndex(index, withFetche
 let aFetchedResultsController = ...
 let withFetchedResultsController = ...
 fetchedResultsContainer.replaceFetchedResultsControllerAtIndex(aFetchedResultsController, withFetchedResultsController: withFetchedResultsController)
+fetchedResultsContainer.performFetch()
 ```
