@@ -11,7 +11,7 @@ import UIKit
 @objc class JPSEmptyFetchedResultsController: NSFetchedResultsController, NSFetchedResultsSectionInfo
 {
     var name = ""
-    var indexTitle: String? = ""
+    var indexTitle: String?
     
     var numberOfObjects: Int
     {
@@ -65,9 +65,10 @@ import UIKit
         }
     }
     
-    var sections: [NSFetchedResultsSectionInfo]
+    var sections: [NSFetchedResultsSectionInfo]?
     {
-        get {
+        get
+        {
             var theSections = [NSFetchedResultsSectionInfo]()
             
             for aFetchedResultsController in self.fetchedResultsControllers
@@ -100,7 +101,7 @@ import UIKit
         }
     }
     
-    init(fetchedResultsControllers: [NSFetchedResultsController], managedObjectContext context: NSManagedObjectContext)
+    init(fetchedResultsControllers: [NSFetchedResultsController])
     {
         super.init()
         
@@ -172,6 +173,8 @@ import UIKit
             if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
             
             try fetchedResultsController.performFetch()
+            
+            
         }
     }
     
