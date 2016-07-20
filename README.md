@@ -61,6 +61,13 @@ fetchedResultsContainer.indexPathForObject(managedObject)
 let section = 0
 fetchedResultsContainer.numberOfObjectsInSection(section)
 ```
+
+** OR **
+
+```
+let section = 0
+fetchedResultsContainer.sections[section].numberOfObjects
+```
 --
 ### Changing FetchedResultsControllers
 Replace NSFetchedResultsControllers when you want to change a section.
