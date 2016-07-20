@@ -3,7 +3,7 @@ A NSFetchedResulterController container that can be used to fetch multiple entit
 
 # Usage
 
-**NOTE: The order of the NSFetchedResultsControllers in the array passed in to the constructor determines the order of the sections.**
+**NOTE: The order of the NSFetchedResultsControllers in the array passed in to the constructor determines the order of the sections. The same goes for the NSFetchRequests.**
 
 ### Allocating a Container
 `let fetchedResultsContainer = JPSFetchedResultsContainer(fetchedResultsControllers: [...], managedObjectContext: context)`<br />
