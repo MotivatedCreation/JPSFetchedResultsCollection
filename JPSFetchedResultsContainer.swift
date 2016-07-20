@@ -32,6 +32,26 @@ extension NSFetchedResultsController
     }
 }
 
+@objc class JPSFechedResultsContainerEmptySectionInfo: NSObject, NSFetchedResultsSectionInfo
+{
+    var name = "EmptySection"
+    var indexTitle: String? = "EmptySection"
+    
+    var numberOfObjects: Int
+    {
+        get {
+            return 0
+        }
+    }
+    
+    var objects: [AnyObject]?
+    {
+        get {
+            return nil
+        }
+    }
+}
+
 // MARK: JPSFetchedResultsControllerDelegate
 
 @objc protocol JPSFetchedResultsControllerDelegate
@@ -50,7 +70,7 @@ extension NSFetchedResultsController
     
     var delegate: JPSFetchedResultsControllerDelegate?
     
-    var fetchedObjects: [AnyObject]?
+    var fetchedObjects: [AnyObject]
     {
         get
         {
@@ -65,7 +85,31 @@ extension NSFetchedResultsController
                 theFetchedObjects.append(fetchedObjects)
             }
             
-            return (theFetchedObjects.count == 0 ? nil : theFetchedObjects)
+            return theFetchedObjects
+        }
+    }
+    
+    var sections: [NSFetchedResultsSectionInfo]
+    {
+        get {
+            var theSections = [NSFetchedResultsSectionInfo]()
+            
+            for aFetchedResultsController in self.fetchedResultsControllers
+            {
+                if (aFetchedResultsController.isEmpty == true)
+                {
+                    let emtpySectionInfo = JPSFechedResultsContainerEmptySectionInfo()
+                    theSections.append(emtpySectionInfo)
+                    
+                    continue
+                }
+                
+                if let sections = aFetchedResultsController.sections {
+                    theSections.appendContentsOf(sections)
+                }
+            }
+            
+            return theSections
         }
     }
     
