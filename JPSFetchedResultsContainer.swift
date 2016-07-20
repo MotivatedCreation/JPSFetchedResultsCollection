@@ -1,5 +1,5 @@
 //
-//  JPSFetchedResultsController.swift
+//  JPSFetchedResultsContainer.swift
 //
 //  Created by Jonathan Sullivan on 7/12/16.
 
