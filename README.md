@@ -7,6 +7,7 @@ If you think of the container as a tree, the container is the root node. The imm
 # Usage
 
 ### Allocating a Container
+--
 **NOTE: The order of the NSFetchedResultsControllers in the array passed in to the constructor determines the order of the sections. The same goes for the NSFetchRequests.**
 
 ```
@@ -22,6 +23,7 @@ fetchedResultsController.delegate = self;
 ```
 
 ### Delegate
+--
 ```
 func containerWillChangeContent(container: JPSFetchedResultsContainer)
 
@@ -33,16 +35,19 @@ func container(container: JPSFetchedResultsContainer, didChangeObject anObject: 
 ```
 
 ### Empty Sections
+--
 ```
 NSFetchedResultsController.empty()
 ```
 
 ### Fetching
+--
 ```
 fetchedResultsContainer.performFetch()
 ```
 
 ### Obtaining objects
+--
 ```
 let indexPath = NSIndexPath(...)
 fetchedResultsContainer.objectAtIndexPath(indexPath)
@@ -52,13 +57,14 @@ fetchedResultsContainer.indexPathForObject(managedObject)
 ```
 
 ### Obtaining Number of Objects per Section
+--
 ```
 let section = 0
 fetchedResultsContainer.numberOfObjectsInSection(section)
 ```
 
 ### Changing FetchedResultsControllers
-
+--
 ```
 let index = 0
 let withFetchedResultsController = ...
