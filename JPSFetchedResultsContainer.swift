@@ -23,6 +23,7 @@ extension NSFetchedResultsController
         }
     }
 
+    var section: [NSFetchedResultsSectionInfo]
     class func empty() -> NSFetchedResultsController
     {
         let fetchedResultsController = NSFetchedResultsController()
@@ -32,7 +33,7 @@ extension NSFetchedResultsController
     }
 }
 
-@objc class JPSFechedResultsContainerEmptySectionInfo: NSObject, NSFetchedResultsSectionInfo
+@objc class JPSFechedResultsEmptySectionInfo: NSObject, NSFetchedResultsSectionInfo
 {
     var name = "EmptySection"
     var indexTitle: String? = "EmptySection"
@@ -98,7 +99,7 @@ extension NSFetchedResultsController
             {
                 if (aFetchedResultsController.isEmpty == true)
                 {
-                    let emtpySectionInfo = JPSFechedResultsContainerEmptySectionInfo()
+                    let emtpySectionInfo = JPSFechedResultsEmptySectionInfo()
                     theSections.append(emtpySectionInfo)
                     
                     continue
