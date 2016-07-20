@@ -23,7 +23,7 @@ fetchedResultsController.delegate = self;
 --
 
 ### Delegate
-Assign a delegate to monitor changes to the JPSFetchedResultsContainer. Thus, allowing you to change your model view accordingly.
+Assign a delegate to monitor changes to the JPSFetchedResultsContainer. Thus, allowing you to change your view accordingly.
 ```
 func containerWillChangeContent(container: JPSFetchedResultsContainer)
 
