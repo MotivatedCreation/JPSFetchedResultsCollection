@@ -1,5 +1,8 @@
 # JPSFetchedResultsContainer
-A NSFetchedResulterController container that can be used to fetch multiple entity types. With this container, you can still take advantage of the benefits that each individual NSFetchedResultsController offers such as, section, caching, etc.
+A NSFetchedResulterController container that can be used to fetch multiple entity types. With this container, you can still take advantage of the benefits that each individual NSFetchedResultsController offers such as, sections, caching, etc. In essence, the contains acts as a wrapper for multiple NSFetchedResultsControllers and provides a familiar API to obtain information.
+
+# Theoretical Structure
+If you think of the container as a tree, the container is the root node. The immediate children of the root node are the NSFetchedResultsControllers. The children of the NSFetchedResultsControllers are their sections and the children of the sections are the rows. However, the NSFetchedResultsController level is treated as transparent. This means that all of the sections in each NSFetchedResultsController are treated as being in the same NSFetchedResultsController. Therefore, the sections are **assumed** to be indexed consecutively.
 
 # Usage
 
