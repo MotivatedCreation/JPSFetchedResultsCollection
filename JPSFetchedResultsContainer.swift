@@ -8,7 +8,7 @@ import UIKit
 
 // MARK: JPSEmptyFetcheResultsSectionInfo
 
-@objc class JPSEmptyFetcheResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
+@objc class JPSEmptyFetchedResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
 {
     var name = ""
     var indexTitle: String?
@@ -32,7 +32,7 @@ import UIKit
 
 @objc class JPSEmptyFetchedResultsController: NSFetchedResultsController
 {
-    let emptySection = JPSEmptyFetcheResultsSectionInfo()
+    let emptySection = JPSEmptyFetchedResultsSectionInfo()
     
     override var sections: [NSFetchedResultsSectionInfo]?
     {
@@ -87,13 +87,6 @@ import UIKit
             
             for aFetchedResultsController in self.fetchedResultsControllers
             {
-                /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
-                {
-                    theSections.append(aFetchedResultsController as! JPSEmptyFetchedResultsController)
-                    
-                    continue
-                }*/
-                
                 if let sections = aFetchedResultsController.sections {
                     theSections.appendContentsOf(sections)
                 }
@@ -134,13 +127,6 @@ import UIKit
         
         for aFetchedResultsController in self.fetchedResultsControllers
         {
-            /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
-            {
-                totalSections += 1
-                
-                continue
-            }*/
-            
             if let count = aFetchedResultsController.sections?.count
             {
                 totalSections += UInt(count)
@@ -164,13 +150,6 @@ import UIKit
         for aFetchedResultsController in self.fetchedResultsControllers
         {
             if (aFetchedResultsController.isEqual(fetchedResultsController)) { break }
-            
-            /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
-            {
-                totalSections += 1
-                
-                continue
-            }*/
             
             if let count = aFetchedResultsController.sections?.count {
                 totalSections += count
