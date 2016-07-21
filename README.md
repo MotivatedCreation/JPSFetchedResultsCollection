@@ -99,7 +99,7 @@ fetchedResultsContainer.insertFetchedResultsControllerAtIndex(aFetchedResultsCon
 ```
 
 #### Replacing FetchedResultsControllers
-Replace NSFetchedResultsControllers when you want to change a section.
+Replace NSFetchedResultsControllers when you want to change specific or all sections for an entity.
 ```
 let index = 0
 let withFetchedResultsController = ...
@@ -117,6 +117,7 @@ fetchedResultsContainer.performFetch()
 ```
 
 #### Removing FetchedResultsControllers
+Remove NSFetchedResultsControllers when you want to remove specific or all sections for an entity.
 ```
 let aFetchedResultsController = ...
 fetchedResultsContainer.removeFetchedResultsController(aFetchedResultsController)
