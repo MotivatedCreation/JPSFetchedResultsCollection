@@ -264,14 +264,14 @@ import UIKit
     
     func fetchedResultsControllerAtIndex(index: UInt) -> NSFetchedResultsController?
     {
-        if (index > self.fetchedResultsControllers.count)
+        if (index > UInt(self.fetchedResultsControllers.count))
         {
             NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid index.", userInfo: nil).raise()
             
-            return 0
+            return nil
         }
         
-        return fetchedResultsController[i]
+        return fetchedResultsControllers[Int(index)]
     }
     
     func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
