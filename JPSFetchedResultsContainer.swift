@@ -264,6 +264,20 @@ import UIKit
         
         self.replaceFetchedResultsControllerAtIndex(indexOfFetchedResultsController!, withFetchedResultsController: withFetchedResultsController)
     }
+    
+    func removeFetchedResultsControllerAtIndex(index: Int)
+    {
+        self.fetchedResultsControllers.removeAtIndex(index)
+    }
+    
+    func removeFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
+    {
+        let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
+        
+        guard let _ = index else { return }
+        
+        self.removeFetchedResultsControllerAtIndex(index!)
+    }
 }
 
 
