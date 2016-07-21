@@ -35,11 +35,11 @@ func container(container: JPSFetchedResultsContainer, didChangeObject anObject: 
 ```
 --
 ### Empty Sections
-Create empty sections by adding a JPSEmptyFetchedResultsController to the array passed in to the constructor. JPSEmptyFetchedResultsController conforms to NSFetchedResultsSectionInfo. This way you can give the empty section a name, indexTitle, etc.
+Create empty sections by adding a JPSEmptyFetchedResultsController to the array passed in to the constructor. JPSEmptyFetchedResultsController contains a custom object called JPSEmptyFetchedResultsSectionInfo that conforms to NSFetchedResultsSectionInfo. This way you can give the empty section a name, indexTitle, etc.
 ```
 let emptyFetchedResultsController = JPSEmptyFetchedResultsController()
-emptyFetchedResultsController.name = "Empty Section"
-emptyFetchedResultsController.indexTitle = "Empty Index Title"
+emptyFetchedResultsController.emptySection.name = "Empty Section"
+emptyFetchedResultsController.emptySection.indexTitle = "Empty Index Title"
 ```
 --
 ### Fetching
