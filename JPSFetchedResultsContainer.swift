@@ -110,19 +110,20 @@ import UIKit
     
     // MARK: Life Cycle Methods
     
-    init(fetchRequests: [NSFetchRequest], managedObjectContext context: NSManagedObjectContext)
+    convenience init(fetchRequests: [NSFetchRequest], managedObjectContext context: NSManagedObjectContext)
     {
-        super.init()
+        var fetchedResultsControllers = [NSFetchedResultsController]()
         
         for fetchRequest in fetchRequests
         {
             let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
-            fetchedResultsController.delegate = self
-            self.fetchedResultsControllers.append(fetchedResultsController)
+            fetchedResultsControllers.append(fetchedResultsController)
         }
+        
+        self.init(fetchedResultsControllers: fetchedResultsControllers)
     }
     
-    init(fetchedResultsControllers: [NSFetchedResultsController])
+    required init(fetchedResultsControllers: [NSFetchedResultsController])
     {
         super.init()
         
@@ -226,9 +227,9 @@ import UIKit
         }
         
         let sectionMask = self.sectionMaskForSection(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
-        let modifiedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
+        let maskedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
         
-        return fetchedResultsController!.objectAtIndexPath(modifiedIndexPath)
+        return fetchedResultsController!.objectAtIndexPath(maskedIndexPath)
     }
     
     func numberOfObjectsInSection(section: UInt) -> Int
@@ -256,13 +257,11 @@ import UIKit
     
     func replaceFetchedResultsController(fetchedResultsController: NSFetchedResultsController, withFetchedResultsController: NSFetchedResultsController)
     {
-        let indexOfFetchedResultsController = self.fetchedResultsControllers.indexOf(fetchedResultsController)
+        let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
         
-        guard let _ = indexOfFetchedResultsController else {
-            return
-        }
+        guard let _ = index else { return }
         
-        self.replaceFetchedResultsControllerAtIndex(indexOfFetchedResultsController!, withFetchedResultsController: withFetchedResultsController)
+        self.replaceFetchedResultsControllerAtIndex(index!, withFetchedResultsController: withFetchedResultsController)
     }
     
     func removeFetchedResultsControllerAtIndex(index: Int)
@@ -295,31 +294,31 @@ extension JPSFetchedResultsContainer: NSFetchedResultsControllerDelegate
     
     func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType)
     {
-        let modifiedSectionIndex = self.numberOfSectionsBeforeFetchedResultsController(controller) + sectionIndex
+        let maskedSection = self.numberOfSectionsBeforeFetchedResultsController(controller) + sectionIndex
         
-        self.delegate?.container(self, didChangeSection: sectionInfo, atIndex: modifiedSectionIndex, forChangeType: type)
+        self.delegate?.container(self, didChangeSection: sectionInfo, atIndex: maskedSection, forChangeType: type)
     }
     
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?)
     {
         let sectionCount = self.numberOfSectionsBeforeFetchedResultsController(controller)
         
-        var modifiedSection: Int?
-        var modifiedIndexPath: NSIndexPath?
+        var maskedSection: Int?
+        var maskedIndexPath: NSIndexPath?
         
         if let _ = indexPath {
-            modifiedSection = sectionCount + indexPath!.section
-            modifiedIndexPath = NSIndexPath(forRow: indexPath!.row, inSection: modifiedSection!)
+            maskedSection = sectionCount + indexPath!.section
+            maskedIndexPath = NSIndexPath(forRow: indexPath!.row, inSection: maskedSection!)
         }
         
-        var modifiedNewSection: Int?
-        var modifiedNewIndexPath: NSIndexPath?
+        var maskedNewSection: Int?
+        var maskedNewIndexPath: NSIndexPath?
         
         if let _ = newIndexPath {
-            modifiedNewSection = sectionCount + newIndexPath!.section
-            modifiedNewIndexPath = NSIndexPath(forRow: newIndexPath!.row, inSection: modifiedNewSection!)
+            maskedNewSection = sectionCount + newIndexPath!.section
+            maskedNewIndexPath = NSIndexPath(forRow: newIndexPath!.row, inSection: maskedNewSection!)
         }
         
-        self.delegate?.container(self, didChangeObject: anObject, atIndexPath: modifiedIndexPath, forChangeType: type, newIndexPath: modifiedNewIndexPath)
+        self.delegate?.container(self, didChangeObject: anObject, atIndexPath: maskedIndexPath, forChangeType: type, newIndexPath: maskedNewIndexPath)
     }
 }
