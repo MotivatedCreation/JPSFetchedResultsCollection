@@ -78,16 +78,16 @@ import UIKit
     {
         get
         {
-            var theFetchedObjects = [AnyObject]()
+            var fetchedObjects = [AnyObject]()
             
             for fetchedResultsController in self.fetchedResultsControllers
             {
-                if let fetchedObjects = fetchedResultsController.fetchedObjects {
-                    theFetchedObjects.append(fetchedObjects)
+                if let theFetchedObjects = fetchedResultsController.fetchedObjects {
+                    fetchedObjects.append(theFetchedObjects)
                 }
             }
             
-            return theFetchedObjects
+            return fetchedObjects
         }
     }
     
@@ -95,16 +95,16 @@ import UIKit
     {
         get
         {
-            var theSections = [NSFetchedResultsSectionInfo]()
+            var sections = [NSFetchedResultsSectionInfo]()
             
             for fetchedResultsController in self.fetchedResultsControllers
             {
-                if let sections = fetchedResultsController.sections {
-                    theSections.appendContentsOf(sections)
+                if let theSections = fetchedResultsController.sections {
+                    sections.appendContentsOf(theSections)
                 }
             }
             
-            return theSections
+            return sections
         }
     }
     
@@ -176,12 +176,12 @@ import UIKit
         return totalSections
     }
     
-    private func sectionMaskForSection(section: UInt, inFetchedResultsController: NSFetchedResultsController) -> Int
+    private func sectionForSectionMask(section: UInt, inFetchedResultsController: NSFetchedResultsController) -> Int
     {
         let numberOfSectionsForFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
-        let sectionMask = (section % numberOfSectionsForFetchedResultsController)
+        let section = (section % numberOfSectionsForFetchedResultsController)
         
-        return Int(sectionMask)
+        return Int(section)
     }
     
     // MARK: Public Functions
@@ -226,8 +226,8 @@ import UIKit
             return 0
         }
         
-        let sectionMask = self.sectionMaskForSection(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
-        let maskedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
+        let actualSection = self.sectionForSectionMask(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
+        let maskedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: actualSection)
         
         return fetchedResultsController!.objectAtIndexPath(maskedIndexPath)
     }
@@ -243,9 +243,9 @@ import UIKit
             return 0
         }
         
-        let sectionMask = self.sectionMaskForSection(section, inFetchedResultsController: fetchedResultsController!)
+        let actualSection = self.sectionForSectionMask(section, inFetchedResultsController: fetchedResultsController!)
         
-        return fetchedResultsController!.sections![sectionMask].numberOfObjects
+        return fetchedResultsController!.sections![actualSection].numberOfObjects
     }
     
     func indexOfFetchedResultsController(fetchedResultsController: NSFetchedResultsController) -> Int
@@ -262,10 +262,26 @@ import UIKit
         return index!
     }
     
+    func fetchedResultsControllerAtIndex(index: UInt) -> NSFetchedResultsController?
+    {
+        var fetchedResultsController: NSFetchedResultsController?
+        
+        for i in 0...self.fetchedResultsControllers.count
+        {
+            if (i == index)
+            {
+                fetchedResultsControllers = self.fetchedResultsControllers[i]
+                
+                break
+            }
+        }
+        
+        return fetchedResultsController
+    }
+    
     func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
     {
         withFetchedResultsController.delegate = self
-        
         self.fetchedResultsControllers[index] = withFetchedResultsController
     }
     
@@ -275,8 +291,7 @@ import UIKit
         self.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
     }
     
-    func removeFetchedResultsControllerAtIndex(index: Int)
-    {
+    func removeFetchedResultsControllerAtIndex(index: Int) {
         self.fetchedResultsControllers.removeAtIndex(index)
     }
     
