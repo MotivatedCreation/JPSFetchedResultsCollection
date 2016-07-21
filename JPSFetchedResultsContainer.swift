@@ -248,14 +248,7 @@ import UIKit
         return fetchedResultsController!.sections![sectionMask].numberOfObjects
     }
     
-    func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
-    {
-        withFetchedResultsController.delegate = self
-        
-        self.fetchedResultsControllers[index] = withFetchedResultsController
-    }
-    
-    func replaceFetchedResultsController(fetchedResultsController: NSFetchedResultsController, withFetchedResultsController: NSFetchedResultsController)
+    func indexOfFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
     {
         let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
         
@@ -266,6 +259,19 @@ import UIKit
             return
         }
         
+        return index!
+    }
+    
+    func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
+    {
+        withFetchedResultsController.delegate = self
+        
+        self.fetchedResultsControllers[index] = withFetchedResultsController
+    }
+    
+    func replaceFetchedResultsController(fetchedResultsController: NSFetchedResultsController, withFetchedResultsController: NSFetchedResultsController)
+    {
+        let index = self.indexOfFetchedResultsController(fetchedResultsController)
         self.replaceFetchedResultsControllerAtIndex(index!, withFetchedResultsController: withFetchedResultsController)
     }
     
@@ -276,15 +282,7 @@ import UIKit
     
     func removeFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
     {
-        let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
-        
-        guard let _ = index else
-        {
-            NSException(name: "Invalid fetchedResultsController", reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
-            
-            return
-        }
-        
+        let index = self.indexOfFetchedResultsController(fetchedResultsController)
         self.removeFetchedResultsControllerAtIndex(index!)
     }
 }
