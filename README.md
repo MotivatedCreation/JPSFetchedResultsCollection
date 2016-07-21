@@ -95,7 +95,7 @@ let aFetchedResultsController = fetchedResultsContainer.fetchedResultsController
 ```
 let index = 0
 let aFetchedResultsController = ...
-fetchedResultsContainer.insertFetchedResultsControllerAtIndex(aFetchedResultsController, index)
+fetchedResultsContainer.insertFetchedResultsControllerAtIndex(aFetchedResultsController, atIndex: index)
 ```
 
 #### Replacing FetchedResultsControllers
