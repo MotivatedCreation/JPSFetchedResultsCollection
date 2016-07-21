@@ -6,22 +6,26 @@
 import UIKit
 
 
-// MARK: JPSEmptyFetcheResultsSectionInfo
+// MARK: JPSEmptyFetchedResultsSectionInfo
 
 @objc class JPSEmptyFetchedResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
 {
+    // MARK: Public Mutable Members
+    
     var name = ""
     var indexTitle: String?
     
+    // MARK: Public Read Only Members
+    
     var numberOfObjects: Int
-        {
+    {
         get {
             return 0
         }
     }
     
     var objects: [AnyObject]?
-        {
+    {
         get {
             return nil
         }
@@ -32,7 +36,11 @@ import UIKit
 
 @objc class JPSEmptyFetchedResultsController: NSFetchedResultsController
 {
+    // MARK: Public Mutable Members
+    
     let emptySection = JPSEmptyFetchedResultsSectionInfo()
+    
+    // MARK: Public Read Only Members
     
     override var sections: [NSFetchedResultsSectionInfo]?
     {
@@ -56,9 +64,15 @@ import UIKit
 
 @objc class JPSFetchedResultsContainer: NSObject
 {
+    // MARK: Private Mutable Members
+    
     private var fetchedResultsControllers = [NSFetchedResultsController]()
     
+    // MARK: Public Mutable Members
+    
     var delegate: JPSFetchedResultsControllerDelegate?
+    
+    // MARK: Public Read Only Members
     
     var fetchedObjects: [AnyObject]
     {
@@ -96,6 +110,8 @@ import UIKit
         }
     }
     
+    // MARK: Life Cycle Methods
+    
     init(fetchRequests: [NSFetchRequest], managedObjectContext context: NSManagedObjectContext)
     {
         super.init()
@@ -119,6 +135,8 @@ import UIKit
         }
     }
 
+    // MARK: Private Functions
+    
     private func fetchedResultsControllerForSection(section: UInt) -> NSFetchedResultsController?
     {
         var totalSections: UInt = 0
@@ -158,6 +176,8 @@ import UIKit
         
         return totalSections
     }
+    
+    // MARK: Public Functions
     
     func performFetch() throws
     {
