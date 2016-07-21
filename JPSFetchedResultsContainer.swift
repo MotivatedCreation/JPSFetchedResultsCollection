@@ -65,7 +65,7 @@ import UIKit
         }
     }
     
-    var sections: [NSFetchedResultsSectionInfo]?
+    var sections: [NSFetchedResultsSectionInfo]
     {
         get
         {
