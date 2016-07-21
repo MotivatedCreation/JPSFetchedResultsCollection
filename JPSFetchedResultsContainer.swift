@@ -274,6 +274,12 @@ import UIKit
         return fetchedResultsControllers[Int(index)]
     }
     
+    func insertFetchedResultsControllerAtIndex(fetchedResultsController: NSFetchedResultsController, atIndex: Int)
+    {
+        fetchedResultsController.delegate = self
+        self.fetchedResultsControllers.insert(fetchedResultsController, atIndex: atIndex)
+    }
+    
     func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
     {
         withFetchedResultsController.delegate = self
