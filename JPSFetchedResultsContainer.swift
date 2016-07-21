@@ -82,11 +82,9 @@ import UIKit
             
             for fetchedResultsController in self.fetchedResultsControllers
             {
-                guard let fetchedObjects = fetchedResultsController.fetchedObjects else {
-                    continue
+                if let fetchedObjects = fetchedResultsController.fetchedObjects {
+                    theFetchedObjects.append(fetchedObjects)
                 }
-                
-                theFetchedObjects.append(fetchedObjects)
             }
             
             return theFetchedObjects
@@ -99,9 +97,9 @@ import UIKit
         {
             var theSections = [NSFetchedResultsSectionInfo]()
             
-            for aFetchedResultsController in self.fetchedResultsControllers
+            for fetchedResultsController in self.fetchedResultsControllers
             {
-                if let sections = aFetchedResultsController.sections {
+                if let sections = fetchedResultsController.sections {
                     theSections.appendContentsOf(sections)
                 }
             }
@@ -177,6 +175,14 @@ import UIKit
         return totalSections
     }
     
+    private func sectionMaskForSection(section: UInt, inFetchedResultsController: NSFetchedResultsController) -> Int
+    {
+        let numberOfSectionsForFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
+        let assumedSection = (section % numberOfSectionsForFetchedResultsController)
+        
+        return Int(assumedSection)
+    }
+    
     // MARK: Public Functions
     
     func performFetch() throws
@@ -200,9 +206,8 @@ import UIKit
             return 0
         }
         
-        let numberOfSectionsForFetchedResultsController = fetchedResultsController!.sections!.count
-        let sectionIndex = (indexPath.section % numberOfSectionsForFetchedResultsController)
-        let modifiedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionIndex)
+        let sectionMask = self.sectionMaskForSection(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
+        let modifiedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
         
         return fetchedResultsController!.objectAtIndexPath(modifiedIndexPath)
     }
@@ -226,18 +231,17 @@ import UIKit
         return indexPath
     }
     
-    func numberOfObjectsInSection(index: UInt) -> Int
+    func numberOfObjectsInSection(section: UInt) -> Int
     {
-        let fetchedResultsController = self.fetchedResultsControllerForSection(index)
+        let fetchedResultsController = self.fetchedResultsControllerForSection(section)
         
         guard let _ = fetchedResultsController else {
             return 0
         }
         
-        let numberOfSectionsForFetchedResultsController = UInt(fetchedResultsController!.sections!.count)
-        let sectionIndex = Int(index % numberOfSectionsForFetchedResultsController)
+        let sectionMask = self.sectionMaskForSection(section, inFetchedResultsController: fetchedResultsController!)
         
-        return fetchedResultsController!.sections![sectionIndex].numberOfObjects
+        return fetchedResultsController!.sections![sectionMask].numberOfObjects
     }
     
     func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
