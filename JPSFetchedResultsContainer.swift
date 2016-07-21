@@ -248,7 +248,7 @@ import UIKit
         return fetchedResultsController!.sections![sectionMask].numberOfObjects
     }
     
-    func indexOfFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
+    func indexOfFetchedResultsController(fetchedResultsController: NSFetchedResultsController) -> Int
     {
         let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
         
@@ -256,7 +256,7 @@ import UIKit
         {
             NSException(name: "Invalid fetchedResultsController", reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
             
-            return
+            return 0
         }
         
         return index!
@@ -272,7 +272,7 @@ import UIKit
     func replaceFetchedResultsController(fetchedResultsController: NSFetchedResultsController, withFetchedResultsController: NSFetchedResultsController)
     {
         let index = self.indexOfFetchedResultsController(fetchedResultsController)
-        self.replaceFetchedResultsControllerAtIndex(index!, withFetchedResultsController: withFetchedResultsController)
+        self.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
     }
     
     func removeFetchedResultsControllerAtIndex(index: Int)
@@ -283,7 +283,7 @@ import UIKit
     func removeFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
     {
         let index = self.indexOfFetchedResultsController(fetchedResultsController)
-        self.removeFetchedResultsControllerAtIndex(index!)
+        self.removeFetchedResultsControllerAtIndex(index)
     }
 }
 
