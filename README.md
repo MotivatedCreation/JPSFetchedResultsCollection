@@ -75,7 +75,9 @@ let section = 0
 fetchedResultsContainer.sections[section].numberOfObjects
 ```
 --
-### Obtaining FetchedResultsControllers
+### Managing FetchedResultsControllers
+
+#### Obtaining FetchedResultsControllers
 ```
 let aFetchedResultsController = ...
 let index = fetchedResultsContainer.indexOfFetchedResultsController(aFetchedResultsController)
@@ -87,8 +89,14 @@ let index = fetchedResultsContainer.indexOfFetchedResultsController(aFetchedResu
 let index = 0
 let aFetchedResultsController = fetchedResultsContainer.fetchedResultsControllerAtIndex(index)
 ```
---
-### Changing FetchedResultsControllers
+
+#### Inserting FetchedResultsControllers
+
+```
+let index = 0
+let aFetchedResultsController = ...
+fetchedResultsContainer.insertFetchedResultsControllerAtIndex(aFetchedResultsController, index)
+```
 
 #### Replacing FetchedResultsControllers
 Replace NSFetchedResultsControllers when you want to change a section.
