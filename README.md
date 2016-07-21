@@ -53,7 +53,11 @@ Obtain objects from a section the same way as a NSFetchedResultsController.
 ```
 let indexPath = NSIndexPath(...)
 fetchedResultsContainer.objectAtIndexPath(indexPath)
+```
 
+**OR**
+
+```
 let managedObject = ...
 fetchedResultsContainer.indexPathForObject(managedObject)
 ```
