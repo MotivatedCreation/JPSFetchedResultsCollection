@@ -268,9 +268,9 @@ import UIKit
         
         for i in 0...self.fetchedResultsControllers.count
         {
-            if (i == index)
+            if (i == Int(index))
             {
-                fetchedResultsControllers = self.fetchedResultsControllers[i]
+                fetchedResultsController = self.fetchedResultsControllers[i]
                 
                 break
             }
