@@ -178,9 +178,9 @@ import UIKit
     private func sectionMaskForSection(section: UInt, inFetchedResultsController: NSFetchedResultsController) -> Int
     {
         let numberOfSectionsForFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
-        let assumedSection = (section % numberOfSectionsForFetchedResultsController)
+        let sectionMask = (section % numberOfSectionsForFetchedResultsController)
         
-        return Int(assumedSection)
+        return Int(sectionMask)
     }
     
     // MARK: Public Functions
@@ -193,23 +193,6 @@ import UIKit
             
             try fetchedResultsController.performFetch()
         }
-    }
-    
-    func objectAtIndexPath(indexPath: NSIndexPath) -> AnyObject
-    {
-        let fetchedResultsController = self.fetchedResultsControllerForSection(UInt(indexPath.section))
-        
-        guard let _ = fetchedResultsController else
-        {
-            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid indexPath.", userInfo: nil).raise()
-            
-            return 0
-        }
-        
-        let sectionMask = self.sectionMaskForSection(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
-        let modifiedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
-        
-        return fetchedResultsController!.objectAtIndexPath(modifiedIndexPath)
     }
     
     func indexPathForObject(object: AnyObject) -> NSIndexPath?
@@ -231,11 +214,31 @@ import UIKit
         return indexPath
     }
     
+    func objectAtIndexPath(indexPath: NSIndexPath) -> AnyObject
+    {
+        let fetchedResultsController = self.fetchedResultsControllerForSection(UInt(indexPath.section))
+        
+        guard let _ = fetchedResultsController else
+        {
+            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid indexPath.", userInfo: nil).raise()
+            
+            return 0
+        }
+        
+        let sectionMask = self.sectionMaskForSection(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
+        let modifiedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: sectionMask)
+        
+        return fetchedResultsController!.objectAtIndexPath(modifiedIndexPath)
+    }
+    
     func numberOfObjectsInSection(section: UInt) -> Int
     {
         let fetchedResultsController = self.fetchedResultsControllerForSection(section)
         
         guard let _ = fetchedResultsController else {
+            
+            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid section.", userInfo: nil).raise()
+            
             return 0
         }
         
