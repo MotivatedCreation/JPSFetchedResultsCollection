@@ -259,7 +259,12 @@ import UIKit
     {
         let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
         
-        guard let _ = index else { return }
+        guard let _ = index else
+        {
+            NSException(name: "Invalid fetchedResultsController", reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
+            
+            return
+        }
         
         self.replaceFetchedResultsControllerAtIndex(index!, withFetchedResultsController: withFetchedResultsController)
     }
@@ -273,7 +278,12 @@ import UIKit
     {
         let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
         
-        guard let _ = index else { return }
+        guard let _ = index else
+        {
+            NSException(name: "Invalid fetchedResultsController", reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
+            
+            return
+        }
         
         self.removeFetchedResultsControllerAtIndex(index!)
     }
