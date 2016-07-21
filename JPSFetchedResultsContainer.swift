@@ -6,24 +6,38 @@
 import UIKit
 
 
-// MARK: JPSEmptyFetchedResultsController
+// MARK: JPSEmptyFetcheResultsSectionInfo
 
-@objc class JPSEmptyFetchedResultsController: NSFetchedResultsController, NSFetchedResultsSectionInfo
+@objc class JPSEmptyFetcheResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
 {
     var name = ""
     var indexTitle: String?
     
     var numberOfObjects: Int
-    {
+        {
         get {
             return 0
         }
     }
     
     var objects: [AnyObject]?
-    {
+        {
         get {
             return nil
+        }
+    }
+}
+
+// MARK: JPSEmptyFetchedResultsController
+
+@objc class JPSEmptyFetchedResultsController: NSFetchedResultsController
+{
+    let emptySection = JPSEmptyFetcheResultsSectionInfo()
+    
+    override var sections: [NSFetchedResultsSectionInfo]?
+    {
+        get {
+            return [self.emptySection]
         }
     }
 }
@@ -73,12 +87,12 @@ import UIKit
             
             for aFetchedResultsController in self.fetchedResultsControllers
             {
-                if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
+                /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
                 {
                     theSections.append(aFetchedResultsController as! JPSEmptyFetchedResultsController)
                     
                     continue
-                }
+                }*/
                 
                 if let sections = aFetchedResultsController.sections {
                     theSections.appendContentsOf(sections)
@@ -120,12 +134,12 @@ import UIKit
         
         for aFetchedResultsController in self.fetchedResultsControllers
         {
-            if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
+            /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
             {
                 totalSections += 1
                 
                 continue
-            }
+            }*/
             
             if let count = aFetchedResultsController.sections?.count
             {
@@ -151,12 +165,12 @@ import UIKit
         {
             if (aFetchedResultsController.isEqual(fetchedResultsController)) { break }
             
-            if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
+            /*if (aFetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self))
             {
                 totalSections += 1
                 
                 continue
-            }
+            }*/
             
             if let count = aFetchedResultsController.sections?.count {
                 totalSections += count
@@ -173,8 +187,6 @@ import UIKit
             if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
             
             try fetchedResultsController.performFetch()
-            
-            
         }
     }
     
