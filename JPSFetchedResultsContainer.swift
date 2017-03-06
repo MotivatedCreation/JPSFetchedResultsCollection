@@ -8,7 +8,7 @@ import UIKit
 
 // MARK: JPSEmptyFetchedResultsSectionInfo
 
-@objc class JPSEmptyFetchedResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
+private class JPSEmptyFetchedResultsSectionInfo: NSObject, NSFetchedResultsSectionInfo
 {
     // MARK: Public Mutable Members
     
@@ -17,24 +17,18 @@ import UIKit
     
     // MARK: Public Read Only Members
     
-    var numberOfObjects: Int
-    {
-        get {
-            return 0
-        }
+    var numberOfObjects: Int {
+        get { return 0 }
     }
     
-    var objects: [AnyObject]?
-    {
-        get {
-            return nil
-        }
+    var objects: [Any]? {
+        get { return nil }
     }
 }
 
 // MARK: JPSEmptyFetchedResultsController
 
-@objc class JPSEmptyFetchedResultsController: NSFetchedResultsController
+private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSManagedObject>
 {
     // MARK: Public Mutable Members
     
@@ -42,22 +36,19 @@ import UIKit
     
     // MARK: Public Read Only Members
     
-    override var sections: [NSFetchedResultsSectionInfo]?
-    {
-        get {
-            return [self.emptySection]
-        }
+    override var sections: [NSFetchedResultsSectionInfo]? {
+        get { return [self.emptySection] }
     }
 }
 
-// MARK: JPSFetchedResultsControllerDelegate
+// MARK: JPSFetchedResultsContainerDelegate
 
-@objc protocol JPSFetchedResultsControllerDelegate
+@objc protocol JPSFetchedResultsContainerDelegate
 {
-    func containerWillChangeContent(container: JPSFetchedResultsContainer)
-    func containerDidChangeContent(container: JPSFetchedResultsContainer)
-    func container(container: JPSFetchedResultsContainer, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType)
-    func container(container: JPSFetchedResultsContainer, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?)
+    func containerWillChangeContent(_ container: JPSFetchedResultsContainer)
+    func containerDidChangeContent(_ container: JPSFetchedResultsContainer)
+    func container(_ container: JPSFetchedResultsContainer, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
+    func container(_ container: JPSFetchedResultsContainer, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
 }
 
 // MARK: JPSFetchedResultsController
@@ -66,11 +57,15 @@ import UIKit
 {
     // MARK: Private Mutable Members
     
-    private var fetchedResultsControllers = [NSFetchedResultsController]()
+    private var emptyFetchedResultsControllerIndexes: [NSNumber]?
+    
+    // MARK: Read Only Members
+    
+    private(set) var fetchedResultsControllers = [NSFetchedResultsController<NSManagedObject>]()
     
     // MARK: Public Mutable Members
     
-    var delegate: JPSFetchedResultsControllerDelegate?
+    weak var delegate: JPSFetchedResultsContainerDelegate?
     
     // MARK: Public Read Only Members
     
@@ -78,12 +73,12 @@ import UIKit
     {
         get
         {
-            var fetchedObjects = [AnyObject]()
+            var fetchedObjects = [NSManagedObject]()
             
             for fetchedResultsController in self.fetchedResultsControllers
             {
                 if let theFetchedObjects = fetchedResultsController.fetchedObjects {
-                    fetchedObjects.append(theFetchedObjects)
+                    fetchedObjects += theFetchedObjects
                 }
             }
             
@@ -100,7 +95,7 @@ import UIKit
             for fetchedResultsController in self.fetchedResultsControllers
             {
                 if let theSections = fetchedResultsController.sections {
-                    sections.appendContentsOf(theSections)
+                    sections.append(contentsOf: theSections)
                 }
             }
             
@@ -110,9 +105,9 @@ import UIKit
     
     // MARK: Life Cycle Methods
     
-    convenience init(fetchRequests: [NSFetchRequest], managedObjectContext context: NSManagedObjectContext)
+    convenience init(fetchRequests: [NSFetchRequest<NSManagedObject>], emptySectionIndexes: [NSNumber], managedObjectContext context: NSManagedObjectContext)
     {
-        var fetchedResultsControllers = [NSFetchedResultsController]()
+        var fetchedResultsControllers = [NSFetchedResultsController<NSManagedObject>]()
         
         for fetchRequest in fetchRequests
         {
@@ -120,15 +115,30 @@ import UIKit
             fetchedResultsControllers.append(fetchedResultsController)
         }
         
-        self.init(fetchedResultsControllers: fetchedResultsControllers)
+        self.init(fetchedResultsControllers: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
     }
     
-    required init(fetchedResultsControllers: [NSFetchedResultsController])
+    required init(fetchedResultsControllers: [NSFetchedResultsController<NSManagedObject>], emptySectionIndexes: [NSNumber]?)
     {
+        self.emptyFetchedResultsControllerIndexes = emptySectionIndexes
+        
         super.init()
         
-        for fetchedResultsController in fetchedResultsControllers
+        var indexOfCurrentNonEmptyFetchedResultsController = 0
+        let totalSections = (fetchedResultsControllers.count + (emptySectionIndexes?.count ?? 0))
+        
+        for index in 0...(totalSections - 1)
         {
+            var fetchedResultsController: NSFetchedResultsController<NSManagedObject>!
+            
+            if (self.emptyFetchedResultsControllerIndexes?.contains(NSNumber(value: index)) ?? false) {
+                fetchedResultsController = JPSEmptyFetchedResultsController()
+            }
+            else {
+                fetchedResultsController = fetchedResultsControllers[indexOfCurrentNonEmptyFetchedResultsController]
+                indexOfCurrentNonEmptyFetchedResultsController += 1;
+            }
+            
             fetchedResultsController.delegate = self
             self.fetchedResultsControllers.append(fetchedResultsController)
         }
@@ -136,12 +146,12 @@ import UIKit
 
     // MARK: Private Functions
     
-    private func fetchedResultsControllerForSection(section: UInt) -> NSFetchedResultsController?
+    fileprivate func fetchedResultsControllerForSection(_ section: UInt) -> NSFetchedResultsController<NSManagedObject>?
     {
         var totalSections: UInt = 0
         
-        var fetchedResultsController: NSFetchedResultsController?
-        
+        var fetchedResultsController: NSFetchedResultsController<NSManagedObject>?
+
         for aFetchedResultsController in self.fetchedResultsControllers
         {
             if let count = aFetchedResultsController.sections?.count
@@ -160,7 +170,7 @@ import UIKit
         return fetchedResultsController
     }
     
-    private func numberOfSectionsBeforeFetchedResultsController(fetchedResultsController: NSFetchedResultsController) -> Int
+    fileprivate func numberOfSectionsBeforeFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
         var totalSections = 0
         
@@ -176,10 +186,10 @@ import UIKit
         return totalSections
     }
     
-    private func sectionForSectionMask(section: UInt, inFetchedResultsController: NSFetchedResultsController) -> Int
+    fileprivate func sectionForSectionMask(_ section: UInt, inFetchedResultsController: NSFetchedResultsController<NSManagedObject>) -> Int
     {
-        let numberOfSectionsForFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
-        let section = (section % numberOfSectionsForFetchedResultsController)
+        let numberOfSectionsInFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
+        let section = (section % numberOfSectionsInFetchedResultsController)
         
         return Int(section)
     }
@@ -190,21 +200,21 @@ import UIKit
     {
         for fetchedResultsController in self.fetchedResultsControllers
         {
-            if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
+            if (fetchedResultsController.isKind(of: JPSEmptyFetchedResultsController.self)) { continue }
             
             try fetchedResultsController.performFetch()
         }
     }
     
-    func indexPathForObject(object: AnyObject) -> NSIndexPath?
+    func indexPathForObject(_ object: NSManagedObject) -> IndexPath?
     {
-        var indexPath: NSIndexPath?
+        var indexPath: IndexPath?
         
-        for fetchedResultsController in self.fetchedResultsControllers
+        for (_, fetchedResultsController) in self.fetchedResultsControllers.enumerated()
         {
-            if (fetchedResultsController.isKindOfClass(JPSEmptyFetchedResultsController.self)) { continue }
+            if (fetchedResultsController.isKind(of: JPSEmptyFetchedResultsController.self)) { continue }
             
-            if let anIndexPath = fetchedResultsController.indexPathForObject(object)
+            if let anIndexPath = fetchedResultsController.indexPath(forObject: object)
             {
                 indexPath = anIndexPath
                 
@@ -215,30 +225,30 @@ import UIKit
         return indexPath
     }
     
-    func objectAtIndexPath(indexPath: NSIndexPath) -> AnyObject
+    func object(at indexPath: IndexPath) -> AnyObject
     {
-        let fetchedResultsController = self.fetchedResultsControllerForSection(UInt(indexPath.section))
+        let fetchedResultsController = self.fetchedResultsControllerForSection(UInt((indexPath as NSIndexPath).section))
         
         guard let _ = fetchedResultsController else
         {
-            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid indexPath.", userInfo: nil).raise()
+            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (\(#line))] Invalid indexPath.", userInfo: nil).raise()
             
-            return 0
+            return 0 as AnyObject
         }
         
-        let actualSection = self.sectionForSectionMask(UInt(indexPath.section), inFetchedResultsController: fetchedResultsController!)
-        let maskedIndexPath = NSIndexPath(forRow: indexPath.row, inSection: actualSection)
+        let actualSection = self.sectionForSectionMask(UInt((indexPath as NSIndexPath).section), inFetchedResultsController: fetchedResultsController!)
+        let maskedIndexPath = IndexPath(row: (indexPath as NSIndexPath).row, section: actualSection)
         
-        return fetchedResultsController!.objectAtIndexPath(maskedIndexPath)
+        return fetchedResultsController!.object(at: maskedIndexPath)
     }
     
-    func numberOfObjectsInSection(section: UInt) -> Int
+    func numberOfObjectsInSection(_ section: UInt) -> Int
     {
         let fetchedResultsController = self.fetchedResultsControllerForSection(section)
         
-        guard let _ = fetchedResultsController else {
-            
-            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid section.", userInfo: nil).raise()
+        guard let _ = fetchedResultsController else
+        {
+            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (\(#line))] Invalid section.", userInfo: nil).raise()
             
             return 0
         }
@@ -248,13 +258,13 @@ import UIKit
         return fetchedResultsController!.sections![actualSection].numberOfObjects
     }
     
-    func indexOfFetchedResultsController(fetchedResultsController: NSFetchedResultsController) -> Int
+    func indexOfFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>) -> Int
     {
-        let index = self.fetchedResultsControllers.indexOf(fetchedResultsController)
+        let index = self.fetchedResultsControllers.index(of: fetchedResultsController)
         
         guard let _ = index else
         {
-            NSException(name: "Invalid fetchedResultsController", reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
+            NSException(name: NSExceptionName(rawValue: "Invalid fetchedResultsController"), reason: "[\(#file) \(#function) (\(#line))] The fetchedResultsController does not exist.", userInfo: nil).raise()
             
             return 0
         }
@@ -262,11 +272,11 @@ import UIKit
         return index!
     }
     
-    func fetchedResultsControllerAtIndex(index: UInt) -> NSFetchedResultsController?
+    func fetchedResultsControllerAtIndex(_ index: UInt) -> NSFetchedResultsController<NSManagedObject>?
     {
-        if (index > UInt(self.fetchedResultsControllers.count))
+        if (index >= UInt(self.fetchedResultsControllers.count))
         {
-            NSException(name: "Out of Bounds", reason: "[\(#file) \(#function) (\(#line))] Invalid index.", userInfo: nil).raise()
+            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (\(#line))] Invalid index.", userInfo: nil).raise()
             
             return nil
         }
@@ -274,29 +284,33 @@ import UIKit
         return fetchedResultsControllers[Int(index)]
     }
     
-    func insertFetchedResultsControllerAtIndex(fetchedResultsController: NSFetchedResultsController, atIndex: Int)
+    func insertFetchedResultsControllerAtIndex(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>, atIndex: Int)
     {
         fetchedResultsController.delegate = self
-        self.fetchedResultsControllers.insert(fetchedResultsController, atIndex: atIndex)
+        self.fetchedResultsControllers.insert(fetchedResultsController, at: atIndex)
     }
     
-    func replaceFetchedResultsControllerAtIndex(index: Int, withFetchedResultsController: NSFetchedResultsController)
+    func replaceFetchedResultsControllerAtIndex(_ index: Int, withFetchedResultsController: NSFetchedResultsController<NSManagedObject>)
     {
+        if (index >= self.fetchedResultsControllers.count) {
+            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (line: \(#line))] Invalid index.", userInfo: nil).raise()
+        }
+        
         withFetchedResultsController.delegate = self
         self.fetchedResultsControllers[index] = withFetchedResultsController
     }
     
-    func replaceFetchedResultsController(fetchedResultsController: NSFetchedResultsController, withFetchedResultsController: NSFetchedResultsController)
+    func replaceFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>, withFetchedResultsController: NSFetchedResultsController<NSManagedObject>)
     {
         let index = self.indexOfFetchedResultsController(fetchedResultsController)
         self.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
     }
     
-    func removeFetchedResultsControllerAtIndex(index: Int) {
-        self.fetchedResultsControllers.removeAtIndex(index)
+    func removeFetchedResultsControllerAtIndex(_ index: Int) {
+        self.fetchedResultsControllers.remove(at: index)
     }
     
-    func removeFetchedResultsController(fetchedResultsController: NSFetchedResultsController)
+    func removeFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>)
     {
         let index = self.indexOfFetchedResultsController(fetchedResultsController)
         self.removeFetchedResultsControllerAtIndex(index)
@@ -308,41 +322,41 @@ import UIKit
 
 extension JPSFetchedResultsContainer: NSFetchedResultsControllerDelegate
 {
-    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.delegate?.containerWillChangeContent(self)
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.delegate?.containerDidChangeContent(self)
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType)
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
     {
         let maskedSection = self.numberOfSectionsBeforeFetchedResultsController(controller) + sectionIndex
         
-        self.delegate?.container(self, didChangeSection: sectionInfo, atIndex: maskedSection, forChangeType: type)
+        self.delegate?.container(self, didChange: sectionInfo, atSectionIndex: maskedSection, for: type)
     }
     
-    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?)
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
     {
         let sectionCount = self.numberOfSectionsBeforeFetchedResultsController(controller)
         
         var maskedSection: Int?
-        var maskedIndexPath: NSIndexPath?
+        var maskedIndexPath: IndexPath?
         
         if let _ = indexPath {
-            maskedSection = sectionCount + indexPath!.section
-            maskedIndexPath = NSIndexPath(forRow: indexPath!.row, inSection: maskedSection!)
+            maskedSection = (sectionCount + (indexPath! as NSIndexPath).section)
+            maskedIndexPath = IndexPath(row: (indexPath! as NSIndexPath).row, section: maskedSection!)
         }
         
         var maskedNewSection: Int?
-        var maskedNewIndexPath: NSIndexPath?
+        var maskedNewIndexPath: IndexPath?
         
         if let _ = newIndexPath {
-            maskedNewSection = sectionCount + newIndexPath!.section
-            maskedNewIndexPath = NSIndexPath(forRow: newIndexPath!.row, inSection: maskedNewSection!)
+            maskedNewSection = (sectionCount + (newIndexPath! as NSIndexPath).section)
+            maskedNewIndexPath = IndexPath(row: (newIndexPath! as NSIndexPath).row, section: maskedNewSection!)
         }
         
-        self.delegate?.container(self, didChangeObject: anObject, atIndexPath: maskedIndexPath, forChangeType: type, newIndexPath: maskedNewIndexPath)
+        self.delegate?.container(self, didChange: anObject as AnyObject, at: maskedIndexPath, for: type, newIndexPath: maskedNewIndexPath)
     }
 }
