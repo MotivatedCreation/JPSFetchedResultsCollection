@@ -1,5 +1,5 @@
 //
-//  JPSFetchedResultsContainer.swift
+//  JPSFetchedResultsCollection.swift
 //
 //  Created by Jonathan Sullivan on 7/12/16.
 
@@ -41,19 +41,19 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     }
 }
 
-// MARK: JPSFetchedResultsContainerDelegate
+// MARK: JPSFetchedResultsCollectionDelegate
 
-@objc protocol JPSFetchedResultsContainerDelegate
+@objc protocol JPSFetchedResultsCollectionDelegate
 {
-    func containerWillChangeContent(_ container: JPSFetchedResultsContainer)
-    func containerDidChangeContent(_ container: JPSFetchedResultsContainer)
-    func container(_ container: JPSFetchedResultsContainer, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
-    func container(_ container: JPSFetchedResultsContainer, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
+    func containerWillChangeContent(_ container: JPSFetchedResultsCollection)
+    func containerDidChangeContent(_ container: JPSFetchedResultsCollection)
+    func container(_ container: JPSFetchedResultsCollection, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
+    func container(_ container: JPSFetchedResultsCollection, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
 }
 
 // MARK: JPSFetchedResultsController
 
-@objc class JPSFetchedResultsContainer: NSObject
+@objc class JPSFetchedResultsCollection: NSObject
 {
     // MARK: Private Mutable Members
     
@@ -65,7 +65,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     
     // MARK: Public Mutable Members
     
-    weak var delegate: JPSFetchedResultsContainerDelegate?
+    weak var delegate: JPSFetchedResultsCollectionDelegate?
     
     // MARK: Public Read Only Members
     
@@ -290,6 +290,10 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         self.fetchedResultsControllers.insert(fetchedResultsController, at: atIndex)
     }
     
+    func insertFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>) {
+        self.insertFetchedResultsControllerAtIndex(fetchedResultsController, atIndex: self.fetchedResultsControllers.count)
+    }
+    
     func replaceFetchedResultsControllerAtIndex(_ index: Int, withFetchedResultsController: NSFetchedResultsController<NSManagedObject>)
     {
         if (index >= self.fetchedResultsControllers.count) {
@@ -320,7 +324,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
 
 // MARK: NSFetchedResultsControllerDelegate Methods
 
-extension JPSFetchedResultsContainer: NSFetchedResultsControllerDelegate
+extension JPSFetchedResultsCollection: NSFetchedResultsControllerDelegate
 {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         self.delegate?.containerWillChangeContent(self)
