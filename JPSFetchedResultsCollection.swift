@@ -304,7 +304,7 @@ extension JPSFetchedResultsCollection: NSMutableCopying
 {
     func mutableCopy(with zone: NSZone? = nil) -> Any
     {
-        let mutableCopy = type(of: self).init(fetchedResultsControllers: self.fetchedResultsControllers, emptySectionIndexes: self.emptyFetchedResultsControllerIndexes)
+        let mutableCopy = JPSMutableFetchedResultsCollection(fetchedResultsControllers: self.fetchedResultsControllers, emptySectionIndexes: self.emptyFetchedResultsControllerIndexes)
         
         return mutableCopy
     }
