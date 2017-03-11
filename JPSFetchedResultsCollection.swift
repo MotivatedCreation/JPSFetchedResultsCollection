@@ -54,16 +54,17 @@ protocol JPSFetchedResultsCollectionDelegate
 
 // MARK: JPSFetchedResultsController
 
+
 @objc(JPSFetchedResultsCollection)
 class JPSFetchedResultsCollection: NSObject
 {
     // MARK: Private Mutable Members
     
-    private var emptyFetchedResultsControllerIndexes: NSIndexSet?
+    internal var emptyFetchedResultsControllerIndexes: NSIndexSet?
     
     // MARK: Read Only Members
     
-    private(set) var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
+    internal(set) var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
     
     // MARK: Public Mutable Members
     
@@ -148,7 +149,19 @@ class JPSFetchedResultsCollection: NSObject
 
     // MARK: Private Functions
     
-    fileprivate func fetchedResultsController(for section: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
+    internal func fetchedResultsController(at index: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
+    {
+        if (index >= UInt(self.fetchedResultsControllers.count))
+        {
+            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (\(#line))] Invalid index.", userInfo: nil).raise()
+            
+            return nil
+        }
+        
+        return fetchedResultsControllers[Int(index)]
+    }
+    
+    internal func fetchedResultsController(for section: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
     {
         var totalSections: UInt = 0
         
@@ -172,7 +185,7 @@ class JPSFetchedResultsCollection: NSObject
         return fetchedResultsController
     }
     
-    fileprivate func numberOfSections(before fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
+    internal func numberOfSections(before fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
         var totalSections = 0
         
@@ -188,7 +201,7 @@ class JPSFetchedResultsCollection: NSObject
         return totalSections
     }
     
-    fileprivate func section(for sectionMask: UInt, in fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
+    internal func section(for sectionMask: UInt, in fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
         let numberOfSectionsInFetchedResultsController = UInt(fetchedResultsController.sections!.count)
         let section = (sectionMask % numberOfSectionsInFetchedResultsController)
@@ -196,7 +209,7 @@ class JPSFetchedResultsCollection: NSObject
         return Int(section)
     }
     
-    fileprivate func masked(indexPath: IndexPath, for fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> IndexPath
+    internal func masked(indexPath: IndexPath, for fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> IndexPath
     {
         let sectionCount = self.numberOfSections(before: fetchedResultsController)
         
@@ -283,56 +296,19 @@ class JPSFetchedResultsCollection: NSObject
         
         return index!
     }
-    
-    func fetchedResultsController(at index: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
-    {
-        if (index >= UInt(self.fetchedResultsControllers.count))
-        {
-            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (\(#line))] Invalid index.", userInfo: nil).raise()
-            
-            return nil
-        }
-        
-        return fetchedResultsControllers[Int(index)]
-    }
-    
-    func insert(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, at index: Int)
-    {
-        fetchedResultsController.delegate = self
-        self.fetchedResultsControllers.insert(fetchedResultsController, at: index)
-    }
-    
-    func insert(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.insert(fetchedResultsController: fetchedResultsController, at: self.fetchedResultsControllers.count)
-    }
-    
-    func replaceFetchedResultsController(at index: Int, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
-    {
-        if (index >= self.fetchedResultsControllers.count) {
-            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (line: \(#line))] Invalid index.", userInfo: nil).raise()
-        }
-        
-        newFetchedResultsController.delegate = self
-        self.fetchedResultsControllers[index] = newFetchedResultsController
-    }
-    
-    func replace(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
-    {
-        let index = self.index(of: fetchedResultsController)
-        self.replaceFetchedResultsController(at: index, with: newFetchedResultsController)
-    }
-    
-    func removeFetchedResultsController(at index: Int) {
-        self.fetchedResultsControllers.remove(at: index)
-    }
-    
-    func remove(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
-    {
-        let index = self.index(of: fetchedResultsController)
-        self.removeFetchedResultsController(at: index)
-    }
 }
 
+// MARK: NSMutableCopying
+
+extension JPSFetchedResultsCollection: NSMutableCopying
+{
+    func mutableCopy(with zone: NSZone? = nil) -> Any
+    {
+        let mutableCopy = type(of: self).init(fetchedResultsControllers: self.fetchedResultsControllers, emptySectionIndexes: self.emptyFetchedResultsControllerIndexes)
+        
+        return mutableCopy
+    }
+}
 
 // MARK: NSFetchedResultsControllerDelegate Methods
 
