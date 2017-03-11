@@ -28,7 +28,7 @@ private class JPSEmptyFetchedResultsSectionInfo: NSObject, NSFetchedResultsSecti
 
 // MARK: JPSEmptyFetchedResultsController
 
-private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSManagedObject>
+private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>
 {
     // MARK: Public Mutable Members
     
@@ -61,7 +61,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     
     // MARK: Read Only Members
     
-    private(set) var fetchedResultsControllers = [NSFetchedResultsController<NSManagedObject>]()
+    private(set) var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
     
     // MARK: Public Mutable Members
     
@@ -73,7 +73,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     {
         get
         {
-            var fetchedObjects = [NSManagedObject]()
+            var fetchedObjects = [NSFetchRequestResult]()
             
             for fetchedResultsController in self.fetchedResultsControllers
             {
@@ -105,9 +105,9 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     
     // MARK: Life Cycle Methods
     
-    convenience init(fetchRequests: [NSFetchRequest<NSManagedObject>], emptySectionIndexes: [NSNumber], managedObjectContext context: NSManagedObjectContext)
+    convenience init(fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: [NSNumber], managedObjectContext context: NSManagedObjectContext)
     {
-        var fetchedResultsControllers = [NSFetchedResultsController<NSManagedObject>]()
+        var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
         
         for fetchRequest in fetchRequests
         {
@@ -118,7 +118,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         self.init(fetchedResultsControllers: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
     }
     
-    required init(fetchedResultsControllers: [NSFetchedResultsController<NSManagedObject>], emptySectionIndexes: [NSNumber]?)
+    required init(fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: [NSNumber]?)
     {
         self.emptyFetchedResultsControllerIndexes = emptySectionIndexes
         
@@ -129,7 +129,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         
         for index in 0...(totalSections - 1)
         {
-            var fetchedResultsController: NSFetchedResultsController<NSManagedObject>!
+            var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>!
             
             if (self.emptyFetchedResultsControllerIndexes?.contains(NSNumber(value: index)) ?? false) {
                 fetchedResultsController = JPSEmptyFetchedResultsController()
@@ -146,11 +146,11 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
 
     // MARK: Private Functions
     
-    fileprivate func fetchedResultsControllerForSection(_ section: UInt) -> NSFetchedResultsController<NSManagedObject>?
+    fileprivate func fetchedResultsController(for section: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
     {
         var totalSections: UInt = 0
         
-        var fetchedResultsController: NSFetchedResultsController<NSManagedObject>?
+        var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>?
 
         for aFetchedResultsController in self.fetchedResultsControllers
         {
@@ -170,7 +170,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         return fetchedResultsController
     }
     
-    fileprivate func numberOfSectionsBeforeFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
+    fileprivate func numberOfSections(before fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
         var totalSections = 0
         
@@ -186,12 +186,22 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         return totalSections
     }
     
-    fileprivate func sectionForSectionMask(_ section: UInt, inFetchedResultsController: NSFetchedResultsController<NSManagedObject>) -> Int
+    fileprivate func section(for sectionMask: UInt, in fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
-        let numberOfSectionsInFetchedResultsController = UInt(inFetchedResultsController.sections!.count)
-        let section = (section % numberOfSectionsInFetchedResultsController)
+        let numberOfSectionsInFetchedResultsController = UInt(fetchedResultsController.sections!.count)
+        let section = (sectionMask % numberOfSectionsInFetchedResultsController)
         
         return Int(section)
+    }
+    
+    fileprivate func masked(indexPath: IndexPath, for fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> IndexPath
+    {
+        let sectionCount = self.numberOfSections(before: fetchedResultsController)
+        
+        let maskedSection = (sectionCount + (indexPath as NSIndexPath).section)
+        let maskedIndexPath = IndexPath(row: (indexPath as NSIndexPath).row, section: maskedSection)
+        
+        return maskedIndexPath
     }
     
     // MARK: Public Functions
@@ -206,7 +216,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         }
     }
     
-    func indexPathForObject(_ object: NSManagedObject) -> IndexPath?
+    func indexPath(for object: NSManagedObject) -> IndexPath?
     {
         var indexPath: IndexPath?
         
@@ -227,7 +237,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
     
     func object(at indexPath: IndexPath) -> AnyObject
     {
-        let fetchedResultsController = self.fetchedResultsControllerForSection(UInt((indexPath as NSIndexPath).section))
+        let fetchedResultsController = self.fetchedResultsController(for: UInt((indexPath as NSIndexPath).section))
         
         guard let _ = fetchedResultsController else
         {
@@ -236,15 +246,15 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
             return 0 as AnyObject
         }
         
-        let actualSection = self.sectionForSectionMask(UInt((indexPath as NSIndexPath).section), inFetchedResultsController: fetchedResultsController!)
+        let actualSection = self.section(for: UInt((indexPath as NSIndexPath).section), in: fetchedResultsController!)
         let maskedIndexPath = IndexPath(row: (indexPath as NSIndexPath).row, section: actualSection)
         
         return fetchedResultsController!.object(at: maskedIndexPath)
     }
     
-    func numberOfObjectsInSection(_ section: UInt) -> Int
+    func numberOfObjects(in section: UInt) -> Int
     {
-        let fetchedResultsController = self.fetchedResultsControllerForSection(section)
+        let fetchedResultsController = self.fetchedResultsController(for: section)
         
         guard let _ = fetchedResultsController else
         {
@@ -253,12 +263,12 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
             return 0
         }
         
-        let actualSection = self.sectionForSectionMask(section, inFetchedResultsController: fetchedResultsController!)
+        let actualSection = self.section(for: section, in: fetchedResultsController!)
         
         return fetchedResultsController!.sections![actualSection].numberOfObjects
     }
     
-    func indexOfFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>) -> Int
+    func index(of fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
     {
         let index = self.fetchedResultsControllers.index(of: fetchedResultsController)
         
@@ -272,7 +282,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         return index!
     }
     
-    func fetchedResultsControllerAtIndex(_ index: UInt) -> NSFetchedResultsController<NSManagedObject>?
+    func fetchedResultsController(at index: UInt) -> NSFetchedResultsController<NSFetchRequestResult>?
     {
         if (index >= UInt(self.fetchedResultsControllers.count))
         {
@@ -284,40 +294,40 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSMan
         return fetchedResultsControllers[Int(index)]
     }
     
-    func insertFetchedResultsControllerAtIndex(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>, atIndex: Int)
+    func insert(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, at index: Int)
     {
         fetchedResultsController.delegate = self
-        self.fetchedResultsControllers.insert(fetchedResultsController, at: atIndex)
+        self.fetchedResultsControllers.insert(fetchedResultsController, at: index)
     }
     
-    func insertFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>) {
-        self.insertFetchedResultsControllerAtIndex(fetchedResultsController, atIndex: self.fetchedResultsControllers.count)
+    func insert(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.insert(fetchedResultsController: fetchedResultsController, at: self.fetchedResultsControllers.count)
     }
     
-    func replaceFetchedResultsControllerAtIndex(_ index: Int, withFetchedResultsController: NSFetchedResultsController<NSManagedObject>)
+    func replaceFetchedResultsController(at index: Int, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
         if (index >= self.fetchedResultsControllers.count) {
             NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (line: \(#line))] Invalid index.", userInfo: nil).raise()
         }
         
-        withFetchedResultsController.delegate = self
-        self.fetchedResultsControllers[index] = withFetchedResultsController
+        newFetchedResultsController.delegate = self
+        self.fetchedResultsControllers[index] = newFetchedResultsController
     }
     
-    func replaceFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>, withFetchedResultsController: NSFetchedResultsController<NSManagedObject>)
+    func replace(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
-        let index = self.indexOfFetchedResultsController(fetchedResultsController)
-        self.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
+        let index = self.index(of: fetchedResultsController)
+        self.replaceFetchedResultsController(at: index, with: newFetchedResultsController)
     }
     
-    func removeFetchedResultsControllerAtIndex(_ index: Int) {
+    func removeFetchedResultsController(at index: Int) {
         self.fetchedResultsControllers.remove(at: index)
     }
     
-    func removeFetchedResultsController(_ fetchedResultsController: NSFetchedResultsController<NSManagedObject>)
+    func remove(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
-        let index = self.indexOfFetchedResultsController(fetchedResultsController)
-        self.removeFetchedResultsControllerAtIndex(index)
+        let index = self.index(of: fetchedResultsController)
+        self.removeFetchedResultsController(at: index)
     }
 }
 
@@ -336,29 +346,23 @@ extension JPSFetchedResultsCollection: NSFetchedResultsControllerDelegate
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
     {
-        let maskedSection = self.numberOfSectionsBeforeFetchedResultsController(controller) + sectionIndex
+        let maskedSection = (self.numberOfSections(before: controller) + sectionIndex)
         
         self.delegate?.container(self, didChange: sectionInfo, atSectionIndex: maskedSection, for: type)
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
     {
-        let sectionCount = self.numberOfSectionsBeforeFetchedResultsController(controller)
-        
-        var maskedSection: Int?
         var maskedIndexPath: IndexPath?
         
         if let _ = indexPath {
-            maskedSection = (sectionCount + (indexPath! as NSIndexPath).section)
-            maskedIndexPath = IndexPath(row: (indexPath! as NSIndexPath).row, section: maskedSection!)
+            maskedIndexPath = self.masked(indexPath: indexPath!, for: controller)
         }
         
-        var maskedNewSection: Int?
         var maskedNewIndexPath: IndexPath?
         
         if let _ = newIndexPath {
-            maskedNewSection = (sectionCount + (newIndexPath! as NSIndexPath).section)
-            maskedNewIndexPath = IndexPath(row: (newIndexPath! as NSIndexPath).row, section: maskedNewSection!)
+            maskedNewIndexPath = self.masked(indexPath: newIndexPath!, for: controller)
         }
         
         self.delegate?.container(self, didChange: anObject as AnyObject, at: maskedIndexPath, for: type, newIndexPath: maskedNewIndexPath)
