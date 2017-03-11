@@ -43,7 +43,8 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
 
 // MARK: JPSFetchedResultsCollectionDelegate
 
-@objc protocol JPSFetchedResultsCollectionDelegate
+@objc(JPSFetchedResultsCollectionDelegate)
+protocol JPSFetchedResultsCollectionDelegate
 {
     func containerWillChangeContent(_ container: JPSFetchedResultsCollection)
     func containerDidChangeContent(_ container: JPSFetchedResultsCollection)
@@ -53,11 +54,12 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
 
 // MARK: JPSFetchedResultsController
 
-@objc class JPSFetchedResultsCollection: NSObject
+@objc(JPSFetchedResultsCollection)
+class JPSFetchedResultsCollection: NSObject
 {
     // MARK: Private Mutable Members
     
-    private var emptyFetchedResultsControllerIndexes: [NSNumber]?
+    private var emptyFetchedResultsControllerIndexes: NSIndexSet?
     
     // MARK: Read Only Members
     
@@ -105,7 +107,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
     
     // MARK: Life Cycle Methods
     
-    convenience init(fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: [NSNumber], managedObjectContext context: NSManagedObjectContext)
+    convenience init(fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?, managedObjectContext context: NSManagedObjectContext)
     {
         var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
         
@@ -118,7 +120,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
         self.init(fetchedResultsControllers: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
     }
     
-    required init(fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: [NSNumber]?)
+    required init(fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?)
     {
         self.emptyFetchedResultsControllerIndexes = emptySectionIndexes
         
@@ -131,7 +133,7 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
         {
             var fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>!
             
-            if (self.emptyFetchedResultsControllerIndexes?.contains(NSNumber(value: index)) ?? false) {
+            if (self.emptyFetchedResultsControllerIndexes?.contains(index) ?? false) {
                 fetchedResultsController = JPSEmptyFetchedResultsController()
             }
             else {
