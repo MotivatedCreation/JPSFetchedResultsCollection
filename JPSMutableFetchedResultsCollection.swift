@@ -11,6 +11,8 @@ import Foundation
 @objc(JPSMutableFetchedResultsCollection)
 class JPSMutableFetchedResultsCollection: JPSFetchedResultsCollection
 {
+    // MARK: NSFetchedResultsController Methods
+    
     func insert(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, at index: Int)
     {
         fetchedResultsController.delegate = self
@@ -23,18 +25,14 @@ class JPSMutableFetchedResultsCollection: JPSFetchedResultsCollection
     
     func replaceFetchedResultsController(at index: Int, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
-        if (index >= self.fetchedResultsControllers.count) {
-            NSException(name: NSExceptionName(rawValue: "Out of Bounds"), reason: "[\(#file) \(#function) (line: \(#line))] Invalid index.", userInfo: nil).raise()
-        }
-        
         newFetchedResultsController.delegate = self
         self.fetchedResultsControllers[index] = newFetchedResultsController
     }
     
     func replace(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>, with newFetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
-        let index = self.index(of: fetchedResultsController)
-        self.replaceFetchedResultsController(at: index, with: newFetchedResultsController)
+        let index = self.fetchedResultsControllers.index(of: fetchedResultsController)
+        self.replaceFetchedResultsController(at: index!, with: newFetchedResultsController)
     }
     
     func removeFetchedResultsController(at index: Int) {
@@ -43,7 +41,9 @@ class JPSMutableFetchedResultsCollection: JPSFetchedResultsCollection
     
     func remove(fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>)
     {
-        let index = self.index(of: fetchedResultsController)
-        self.removeFetchedResultsController(at: index)
+        let index = self.fetchedResultsControllers.index(of: fetchedResultsController)
+        self.removeFetchedResultsController(at: index!)
     }
+    
+    // MARK: -
 }
