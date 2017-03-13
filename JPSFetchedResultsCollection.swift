@@ -46,10 +46,10 @@ private class JPSEmptyFetchedResultsController: NSFetchedResultsController<NSFet
 @objc(JPSFetchedResultsCollectionDelegate)
 protocol JPSFetchedResultsCollectionDelegate
 {
-    func collectionWillChangeContent(_ collection: JPSFetchedResultsCollection)
-    func collectionDidChangeContent(_ collection: JPSFetchedResultsCollection)
-    func collection(_ container: JPSFetchedResultsCollection, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
-    func collection(_ collection: JPSFetchedResultsCollection, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
+    @objc optional func collectionWillChangeContent(_ collection: JPSFetchedResultsCollection)
+    @objc optional func collectionDidChangeContent(_ collection: JPSFetchedResultsCollection)
+    @objc optional func collection(_ collection: JPSFetchedResultsCollection, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
+    @objc optional func collection(_ collection: JPSFetchedResultsCollection, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
 }
 
 // MARK: JPSFetchedResultsController
@@ -57,12 +57,9 @@ protocol JPSFetchedResultsCollectionDelegate
 @objc(JPSFetchedResultsCollection)
 class JPSFetchedResultsCollection: NSObject
 {
-    // MARK: Private Mutable Members
-    
-    internal var emptyFetchedResultsControllerIndexes: NSIndexSet?
-    
     // MARK: Read Only Members
     
+    internal(set) var emptyFetchedResultsControllerIndexes: NSIndexSet?
     internal(set) var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
     
     // MARK: Public Mutable Members
@@ -193,7 +190,7 @@ class JPSFetchedResultsCollection: NSObject
     
     // MARK: Life Cycle Methods
     
-    required init(fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?)
+    required init(with fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?)
     {
         super.init()
         
@@ -220,7 +217,7 @@ class JPSFetchedResultsCollection: NSObject
         }
     }
     
-    convenience init(fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?, managedObjectContext context: NSManagedObjectContext)
+    convenience init(with fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?, managedObjectContext context: NSManagedObjectContext)
     {
         var fetchedResultsControllers = [NSFetchedResultsController<NSFetchRequestResult>]()
         
@@ -230,9 +227,25 @@ class JPSFetchedResultsCollection: NSObject
             fetchedResultsControllers.append(fetchedResultsController)
         }
         
-        self.init(fetchedResultsControllers: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
+        self.init(with: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
     }
 
+    // MARK: Factory Methods
+    
+    class func collection(with fetchedResultsControllers: [NSFetchedResultsController<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?) -> JPSFetchedResultsCollection
+    {
+        let collection = JPSFetchedResultsCollection(with: fetchedResultsControllers, emptySectionIndexes: emptySectionIndexes)
+        
+        return collection
+    }
+    
+    class func collection(with fetchRequests: [NSFetchRequest<NSFetchRequestResult>], emptySectionIndexes: NSIndexSet?, managedObjectContext context: NSManagedObjectContext) -> JPSFetchedResultsCollection
+    {
+        let collection = JPSFetchedResultsCollection(with: fetchRequests, emptySectionIndexes: emptySectionIndexes, managedObjectContext: context)
+        
+        return collection
+    }
+    
     // MARK: Private Functions
     
     internal func numberOfSections(before fetchedResultsController: NSFetchedResultsController<NSFetchRequestResult>) -> Int
@@ -393,7 +406,7 @@ extension JPSFetchedResultsCollection: NSMutableCopying
 {
     func mutableCopy(with zone: NSZone? = nil) -> Any
     {
-        let mutableCopy = JPSMutableFetchedResultsCollection(fetchedResultsControllers: self.fetchedResultsControllers, emptySectionIndexes: self.emptyFetchedResultsControllerIndexes)
+        let mutableCopy = JPSMutableFetchedResultsCollection(with: self.fetchedResultsControllers, emptySectionIndexes: self.emptyFetchedResultsControllerIndexes)
         
         return mutableCopy
     }
@@ -404,17 +417,17 @@ extension JPSFetchedResultsCollection: NSMutableCopying
 extension JPSFetchedResultsCollection: NSFetchedResultsControllerDelegate
 {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.delegate?.collectionWillChangeContent(self)
+        self.delegate?.collectionWillChangeContent?(self)
     }
     
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        self.delegate?.collectionDidChangeContent(self)
+        self.delegate?.collectionDidChangeContent?(self)
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
     {
         let maskedSectionIndex = self.masked(sectionIndex: sectionIndex, for: controller)
-        self.delegate?.collection(self, didChange: sectionInfo, atSectionIndex: maskedSectionIndex, for: type)
+        self.delegate?.collection?(self, didChange: sectionInfo, atSectionIndex: maskedSectionIndex, for: type)
     }
     
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
@@ -431,6 +444,6 @@ extension JPSFetchedResultsCollection: NSFetchedResultsControllerDelegate
             maskedNewIndexPath = self.masked(indexPath: newIndexPath!, for: controller)
         }
         
-        self.delegate?.collection(self, didChange: anObject as AnyObject, at: maskedIndexPath, for: type, newIndexPath: maskedNewIndexPath)
+        self.delegate?.collection?(self, didChange: anObject as AnyObject, at: maskedIndexPath, for: type, newIndexPath: maskedNewIndexPath)
     }
 }
