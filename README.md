@@ -4,128 +4,71 @@ A **NSFetchedResulterController** collection that can be used to fetch multiple 
 ### Theoretical Structure
 If you think of the container as a tree, the collection is the root node. The immediate children of the root node are the **NSFetchedResultsControllers**. The children of the **NSFetchedResultsControllers** are their sections and the children of the sections are the rows. However, the **NSFetchedResultsController** level is treated as transparent. This means that all of the sections in each **NSFetchedResultsController** are **assumed** to be in the same **NSFetchedResultsController**. Therefore, the sections are **assumed** or **masked** to be indexed consecutively. On the other hand, empty **NSFetchedResultsControllers** are treated as sections and are indexed.
 
-# Usage
+## Basic Usage
 
-### Allocating a Container
-Allocate an instance of the JPSFetchedResultsContainer using either NSFetchedResultsControllers or NSFetchRequests. The order of the NSFetchedResultsControllers or NSFetchRequests in the array determines the order of the entity sections.
-
-```
-let fetchedResultsContainer = JPSFetchedResultsContainer(fetchedResultsControllers: [...], managedObjectContext: context)
-fetchedResultsController.delegate = self
-```
-
-**OR**
+#### 1. Instantiate a JPSFetchedResultsCollection
 
 ```
-let fetchedResultsContainer = JPSFetchedResultsContainer(fetchRequests: [...], managedObjectContext: context)
-fetchedResultsController.delegate = self
-```
---
+let fetchRequest = <# NSManagedObject #>.fetchRequest()
+fetchRequest.sortDescriptors = [<# NSSortDescriptor #>]
+fetchRequest.predicate = <# NSPredicate #>
+    
+let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: <# NSManagedObjectContext #>, sectionNameKeyPath: <# sectionNameKeyPath #>, cacheName: <# cacheName #>)
 
-### Delegate
-Assign a delegate to monitor changes to the JPSFetchedResultsContainer. Thus, allowing you to change your view accordingly.
-```
-func containerWillChangeContent(container: JPSFetchedResultsContainer)
-
-func containerDidChangeContent(container: JPSFetchedResultsContainer)
-
-func container(container: JPSFetchedResultsContainer, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType)
-
-func container(container: JPSFetchedResultsContainer, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?)
-```
---
-### Empty Sections
-Create empty sections by adding a JPSEmptyFetchedResultsController to the array passed in to the constructor. JPSEmptyFetchedResultsController contains a custom object called JPSEmptyFetchedResultsSectionInfo that conforms to NSFetchedResultsSectionInfo. This way you can give the empty section a name, indexTitle, etc.
-```
-let emptyFetchedResultsController = JPSEmptyFetchedResultsController()
-emptyFetchedResultsController.emptySection.name = "Empty Section"
-emptyFetchedResultsController.emptySection.indexTitle = "Empty Index Title"
-```
---
-### Fetching
-Fetch objects from Core Data the same way as a NSFetchedResultsController.
-```
-fetchedResultsContainer.performFetch()
-```
---
-### Obtaining objects
-Obtain objects from a section the same way as a NSFetchedResultsController.
-```
-let indexPath = NSIndexPath(...)
-fetchedResultsContainer.objectAtIndexPath(indexPath)
+let collection = JPSFetchedResultsCollection(with: [fetchedResultsController])
+collection.delegate = self
 ```
 
-**OR**
+#### 2. Fetch the NSManagedObjects
 
 ```
-let managedObject = ...
-fetchedResultsContainer.indexPathForObject(managedObject)
-```
---
-### Obtaining Number of Objects per Section
-```
-let section = 0
-fetchedResultsContainer.numberOfObjectsInSection(section)
+collection.performFetch()
 ```
 
-**OR**
+#### 3. Respond to changes
 
 ```
-let section = 0
-fetchedResultsContainer.sections[section].numberOfObjects
-```
---
-### Managing FetchedResultsControllers
-
-#### Obtaining FetchedResultsControllers
-```
-let aFetchedResultsController = ...
-let index = fetchedResultsContainer.indexOfFetchedResultsController(aFetchedResultsController)
-```
-
-**OR**
-
-```
-let index = 0
-let aFetchedResultsController = fetchedResultsContainer.fetchedResultsControllerAtIndex(index)
-```
-
-#### Inserting FetchedResultsControllers
-
-```
-let index = 0
-let aFetchedResultsController = ...
-fetchedResultsContainer.insertFetchedResultsControllerAtIndex(aFetchedResultsController, atIndex: index)
-```
-
-#### Replacing FetchedResultsControllers
-Replace NSFetchedResultsControllers when you want to change specific or all sections for an entity.
-```
-let index = 0
-let withFetchedResultsController = ...
-fetchedResultsContainer.replaceFetchedResultsControllerAtIndex(index, withFetchedResultsController: withFetchedResultsController)
-fetchedResultsContainer.performFetch()
-```
-
-**OR**
-
-```
-let aFetchedResultsController = ...
-let withFetchedResultsController = ...
-fetchedResultsContainer.replaceFetchedResultsController(aFetchedResultsController, withFetchedResultsController: withFetchedResultsController)
-fetchedResultsContainer.performFetch()
-```
-
-#### Removing FetchedResultsControllers
-Remove NSFetchedResultsControllers when you want to remove specific or all sections for an entity.
-```
-let aFetchedResultsController = ...
-fetchedResultsContainer.removeFetchedResultsController(aFetchedResultsController)
-```
-
-**OR**
-
-```
-let index = 0
-fetchedResultsContainer.removeFetchedResultsControllerAtIndex(index)
+func collectionWillChangeContent(_ collection: JPSFetchedResultsCollection) {
+    self.tableView.beginUpdates()
+}
+    
+func collection(_ collection: JPSFetchedResultsCollection, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?)
+{
+    switch (type)
+    {
+    case .insert:
+        self.tableView.insertRows(at: [newIndexPath!], with: .automatic)
+            
+    case .delete:
+        self.tableView.deleteRows(at: [indexPath!], with: .automatic)
+            
+    case .update:
+        self.tableView.reloadRows(at: [indexPath!], with: .automatic)
+            
+    default:
+        self.tableView.reloadData()
+    }
+}
+    
+func collection(_ collection: JPSFetchedResultsCollection, didChange section: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType)
+{
+    switch (type)
+    {
+    case .insert:
+        self.tableView.insertSections([sectionIndex], with: .automatic)
+            
+    case .delete:
+        self.tableView.deleteSections([sectionIndex], with: .automatic)
+            
+    case .update:
+        self.tableView.reloadSections([sectionIndex], with: .automatic)
+            
+    default:
+        self.tableView.reloadData()
+    }
+}
+    
+func collectionDidChangeContent(_ collection: JPSFetchedResultsCollection) {
+    self.tableView.endUpdates()
+}
 ```
